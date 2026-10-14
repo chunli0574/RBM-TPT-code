@@ -1,0 +1,37 @@
+# denser_sim_main configuration
+# Used by sim_denser binary (read from CWD at runtime)
+
+# Number of simulation paths per combo
+n_denser_paths = 10000
+
+# Base directory containing trained NN model folders (old-format SavedModel directories)
+model_base_dir = ../../../1_NN_training/4_ECC_saved_NNs
+
+# Base directory for new-format (.weights.bin) NN models
+# Required when the rho argument is in the new-format set (CC3: 0.885, 0.895, 0.905, 0.915, 0.925)
+new_model_base_dir = ../../../1_NN_training/4_ECC_saved_NNs
+
+# Output directory for result CSV files
+output_dir = prelimit_simulation_results/denser_sim_results
+
+# epsilon_relative: 0=absolute band (eps×scaling added to boundary)
+#                   1=relative band (FACE_CONST×(rho±eps), no separate scaling)
+epsilon_relative = 0
+
+# wmp_extra_relative: only affects v1 (wmp_no_queue=0)
+#   0 = original: front = (Z[kk]   + λ̃*(Z[kk]    - β̃_v)) * w_eff[kk]
+#                 back  = (Z[2K-1] + λ̃*(ΣZ_h     - β̃_h)) * w_eff[2K-1]
+#   1 = pressure normalized by (B * rho):
+#                 front = (Z[kk]   + λ̃*(Z[kk]    - β̃_v)/(B_V*rho)) * w_eff[kk]
+#                 back  = (Z[2K-1] + λ̃*(ΣZ_h     - β̃_h)/(B_H*rho)) * w_eff[2K-1]
+wmp_extra_relative = 0
+
+# --- Detailed output switch ---
+# 1           = full CSVs:
+#   summary .csv:      include hardstop1..N, pricing_cost, outsourcing_cost
+#   _paths.csv:        include pricing_cost, outsourcing_cost per path
+#   simulation accumulates pricing/outsourcing cost splits + outsource time.
+# 0 (default) = lean CSVs:
+#   those columns are omitted and the simulation skips their accumulation.
+#   cost_mean and delay_prob are unaffected.
+print_detailed_info = 0

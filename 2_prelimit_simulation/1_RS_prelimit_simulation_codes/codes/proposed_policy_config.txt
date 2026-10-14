@@ -1,0 +1,65 @@
+# Proposed policy parameter search configuration
+# (NN pricing + NN outsourcing + WMP scheduling)
+#
+# Edit the lists below.  Separate values with commas.
+# Lines starting with '#' are ignored.
+#
+# The search loops over all combinations of:
+#   safety × epsilon × lambda_tilde × beta_rate_1 × beta_rate_2 × rho
+#
+# beta_tilde_1 = beta_rate_1 * (19/9) * rho
+# beta_tilde_2 = beta_rate_2 * (19/9) * rho
+#
+# A row is considered "feasible" if:
+#   delay_prob_route1 < delay_constraint  AND  delay_prob_route2 < delay_constraint
+# The minimum-cost feasible row is reported at the end.
+
+# --- idle_new_reflection mode: 0=hold_last_no_takeover, 1=inward ---
+inward_reflection   = 0
+
+# --- WMP scheduling variant: 0='N' full formula, 1='Y' simplified limiting formula ---
+wmp_limiting        = 0
+
+# --- wmp_extra_relative (only used when wmp_limiting = 0):
+#       0 = original full-WMP extra term: lam * (Z_other - beta_tilde_other)
+#       1 = scaled extra term:            lam * (Z_other - beta_tilde_other) / (BETA_CONST * rho)
+#       where BETA_CONST = 19/9. Ignored when wmp_limiting = 1. ---
+wmp_extra_relative  = 0
+
+# --- epsilon_relative: 0=absolute band (epsilon × EPSILON_SCALING={1,1,√5,√5})
+#                       1=relative band (epsilon scales with face boundary: FACE_BOUNDARY[f]*(rho ± epsilon)) ---
+epsilon_relative    = 0
+
+# --- beta_rate_symmetric: 0=separate beta_rate_1 and beta_rate_2 lists (default)
+#                          1=beta_rate_2 always equals beta_rate_1 (beta_rate_2_list ignored) ---
+beta_rate_symmetric = 1
+
+# --- Outer parameters (passed to idling/outsourcing policy) ---
+safety_list         = 0.0
+epsilon_list        = 0.11, 0.22, 0.34, 0.45, 0.56
+
+# --- Outsourcing parameter (also selects the NN model) ---
+rho_list            = 0.95, 1.0
+
+# --- Scheduling parameters ---
+lambda_tilde_list   = 2, 4, 6, 8, 10, 12, 14, 16, 18, 20
+beta_rate_1_list    = 0.6, 0.63, 0.66, 0.69, 0.72, 0.75, 0.78, 0.81, 0.84, 0.87, 0.9
+beta_rate_2_list    = -1
+
+# --- Feasibility constraint (in %, same as Python varepsilon=1.0) ---
+delay_constraint    = 1.0
+
+# --- Output directory (relative to the binary, i.e., relative to codes/) ---
+output_dir          = ../prelimit_simulation_results/proposed_policy_results
+
+# --- Directory of NN models (*_grad.weights.bin, converted by export_keras_weights.py).
+#     Only the 11 (rho, theta) pairs in nn_model_paths.h are available: rho = 0.95, 0.96, ..., 1.05.
+#     Leave empty to use NN_MODEL_DIR_DEFAULT in nn_model_paths.h. ---
+model_new_base_dir  = ../../../1_NN_training/3_RS_saved_NNs
+
+# --- Print detailed info in CSV ---
+#   0 = basic CSV only (param_*, cost, std, delay1/2, delay*_std);
+#       skip sub-accumulator updates in hot path (cost/std/delay bit-identical)
+#   1 = include full cost breakdown (pricing_cost, outsourcing_cost,
+#       outsourcing_cost_band/outer/1/2, hardstop1/2)
+print_detailed_info = 0

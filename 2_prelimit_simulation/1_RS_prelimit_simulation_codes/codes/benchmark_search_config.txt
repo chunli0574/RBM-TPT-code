@@ -1,0 +1,158 @@
+# Benchmark parameter search configuration
+#
+# benchmark: one of A1, A2, A3, A4, B1, B2, B3, B4, C1, C2, D1, D2
+#
+# Lines starting with '#' are ignored.
+#
+# --- Pricing type is auto-determined from benchmark name ---
+#   A1,A2,B1,B2,C1,D1 → BCPlinear  (use beta11_list / beta12_list)
+#   A3,A4,B3,B4,C2,D2 → High_low   (use Q_threshold_list / zeta_list)
+#
+# --- Outsourcing / scheduling also auto-determined ---
+#   A1,A2,A3,A4,C1,C2 → single_pushing_per_face  (epsilon is searched)
+#   B1,B2,B3,B4,D1,D2 → threshold_based          (epsilon fixed at 0.25)
+#   A1,A3,B1,B3       → LRS_DelayTime scheduling (no params to search)
+#   A2,A4,B2,B4       → LRS_QueueLen  scheduling (no params to search)
+#   C1,C2,D1,D2       → WMPobj2 scheduling (searched via lambda/beta lists)
+#
+# --- Outer search loops (outermost to innermost): safety → epsilon → rho ---
+#   safety: all 12 benchmarks
+#   epsilon: only A1-A4, C1-C2 (single_pushing); B/D benchmarks use epsilon=0.25 fixed
+
+benchmark          = A1
+
+# idle_new_reflection mode for single_pushing benchmarks (A/C):
+#   0 = epsilon_band_hold_last_outsource_simultaneously_no_takeover
+#   1 = epsilon_band_inward_outsource_simultaneously
+# (ignored for threshold_based benchmarks B/D)
+inward_reflection  = 0
+
+# WMP scheduling variant (C/D benchmarks only):
+#   0 = 'N': full WMP formula using lambda_tilde and beta_tilde
+#   1 = 'Y': simplified limiting formula — pos[i] = (other route total queue < beta_tilde_1)
+wmp_limiting       = 0
+
+# wmp_extra_relative (C/D benchmarks only; only used when wmp_limiting = 0):
+#   0 = original full-WMP extra term: lam * (Z_other - beta_tilde_other)
+#   1 = scaled extra term:            lam * (Z_other - beta_tilde_other) / (BETA_CONST * rho)
+#   where BETA_CONST = 19/9. Ignored when wmp_limiting = 1.
+wmp_extra_relative = 0
+
+# epsilon_relative (A/C/D benchmarks — wherever epsilon band is used):
+#   0 = absolute band: threshold = boundary*rho ± epsilon × EPSILON_SCALING (default)
+#   1 = relative band: threshold = boundary*(rho ± epsilon)
+epsilon_relative   = 0
+
+# beta_rate_symmetric (C/D benchmarks only):
+#   0 = use separate beta_rate_1_list and beta_rate_2_list (default)
+#   1 = beta_rate_2 always equals beta_rate_1 (beta_rate_2_list is ignored)
+beta_rate_symmetric = 1
+
+# highlow_fix_low_zero (A3/A4/B3/B4/C2/D2 high-low pricing only):
+#   0 = search both zeta_low and zeta_high over zeta_list, with iz2 >= iz1
+#       (default; |Q| * |zeta|*(|zeta|+1)/2 combos per round)
+#   1 = fix zeta_low = 0; search zeta_high over the full zeta_list
+#       (|Q| * |zeta| combos per round)
+# Ignored for BCP-linear pricing benchmarks (A1/A2/B1/B2/C1/D1).
+highlow_fix_low_zero = 0
+
+# pricing_magnitude_scale_by_mc_eq (BCP & HighLow pricing — A/B/C/D groups):
+#   0 = default — both pricing rounds use the same beta11/beta12 lists (BCP)
+#                  or the same zeta_list (HighLow).
+#   1 = round 0 uses the original lists; round 1's lists are scaled by the
+#       outsourcing-cost ratio s = OUTSOURCE_COST_RATE[1]/OUTSOURCE_COST_RATE[0]
+#       (= 0.125/0.05 = 2.5 with the default params.h values).
+#         BCP:     beta11_list and beta12_list both ×s in round 1
+#         HighLow: zeta_list ×s in round 1; Q_threshold_list unchanged
+#       Sequential search procedure is unchanged — only the per-route lists differ.
+# Mutually exclusive with use_shared_parameter=1 (program errors out if both are 1).
+pricing_magnitude_scale_by_mc_eq = 0
+
+# use_shared_parameter (BCP & HighLow pricing — A/B/C/D groups):
+#   0 = default — sequential two-round search (route 0 first, then route 1).
+#   1 = single-round shared-parameter search: route 1's params equal route 0's
+#       (mirror).
+#         BCP:     route 0 = route 1 = (beta11, beta12)
+#         HighLow: both routes share (z_thresh, zeta_L, zeta_H)
+#       Output goes to {rho}/pricing/shared_common/.
+#   2 = shared with marginal-cost-equality scaling: route 1 = route 0 × s, where
+#       s = OUTSOURCE_COST_RATE[1]/OUTSOURCE_COST_RATE[0] (= 0.125/0.05 = 2.5
+#       with default params.h values). HighLow's z_thresh stays equal to route 0
+#       (unscaled).
+#         BCP:     route 0 = (beta11, beta12); route 1 = (beta11×s, beta12×s)
+#         HighLow: route 0 = (z_thresh, zeta_L, zeta_H);
+#                  route 1 = (z_thresh, zeta_L×s, zeta_H×s)
+#       Output goes to {rho}/pricing/shared_mc_eq/.
+#   3 = pooled: union of =1 and =2 search lists. Each route-0 combo is tried
+#       twice — once with route1_scale=1.0 (common) and once with route1_scale=s
+#       (mc_eq). Total combos doubles. Best is picked across all 2N rows.
+#       Output goes to {rho}/pricing/shared_pooled/.
+# Any non-zero value is mutually exclusive with pricing_magnitude_scale_by_mc_eq=1.
+use_shared_parameter = 3
+
+# iterative_pricing_scheduling (C1/C2/D1/D2 only — benchmarks with WMP scheduling):
+#   0 = default — single pass: pricing search (with sched init from sched_init_*)
+#                  followed by scheduling search.
+#   1 = iterative — inside each (safety, epsilon, rho) outer combo, repeat
+#                   pricing→scheduling; iteration k's sched init comes from
+#                   iteration k-1's scheduling optimum. Terminates when the
+#                   scheduling optimum matches the previous iteration (within
+#                   tolerance) or iterative_pricing_scheduling_num iterations
+#                   have run. Final iteration's folder is renamed iteration_last.
+# A/B benchmarks (no scheduling search) silently fall back to non-iterative.
+iterative_pricing_scheduling     = 1
+
+# Maximum number of pricing-scheduling iterations (only used when
+# iterative_pricing_scheduling = 1; must be >= 1). Default: 5.
+iterative_pricing_scheduling_num = 5
+
+# Safety stock search list (all benchmarks)
+safety_list        = 1
+
+# Epsilon band search list (used for A1-A4, C1-C2 only; ignored for B/D)
+epsilon_list       = 0.1, 0.25
+
+# Rho search list
+rho_list           = 0.95, 1.0
+
+# --- BCPlinear pricing search parameters (used for A1,A2,B1,B2,C1,D1) ---
+beta11_list        = 0, -0.004, -0.008, -0.012, -0.016, -0.02, -0.024, -0.028, -0.032, -0.036, -0.04
+beta12_list        = 0, -0.004, -0.008, -0.012, -0.016, -0.02, 0.004, 0.008, 0.012, 0.016, 0.02
+
+# --- High_low pricing search parameters (used for A3,A4,B3,B4,C2,D2) ---
+Q_threshold_list    = 0.6, 0.7, 0.8, 0.9
+zeta_list           = 0, -0.008, -0.016, -0.024, -0.032, -0.04, -0.048, -0.056, -0.064, -0.072, -0.08
+
+# --- WMP scheduling parameters (used for C1,C2,D1,D2 scheduling search) ---
+lambda_tilde_list   = 2, 4, 6, 8, 10, 12, 14, 16, 18, 20
+beta_rate_1_list    = 0.6, 0.63, 0.66, 0.69, 0.72, 0.75, 0.78, 0.81, 0.84, 0.87, 0.9
+beta_rate_2_list    = -1
+
+# --- WMP scheduling init for pricing phase (C1,C2,D1,D2 only; single values, not lists) ---
+# Fixed scheduling used during pricing search, before the scheduling search begins.
+# Formula: beta_tilde_i = sched_init_beta_rate_i * (19/9) * rho
+# Default values: lambda=4.0, beta_rate≈0.606  (→ beta_tilde ≈ 1.279 at rho=1.0)
+sched_init_lambda_tilde = 4.0
+sched_init_beta_rate_1  = 0.75
+sched_init_beta_rate_2  = 0.75
+
+# --- Feasibility constraint (in %) ---
+delay_constraint   = 1.0
+
+# --- Output directory (relative to binary, i.e., relative to codes/) ---
+output_dir         = ../prelimit_simulation_results/benchmark_results
+
+# --- Parallelism within benchmark search (OpenMP) ---
+# 0 or 1 = serial (default)
+# N > 1  = use N threads: scheduling search combo-level, pricing search round-inner
+# Actual threads = min(parallel_threads, SLURM_CPUS_PER_TASK)
+# Requires binary built with USE_OMP=1 (e.g. sim_benchmark_omp).
+# Plain sim_benchmark ignores this setting and runs serial.
+parallel_threads   = 5
+
+# --- Print detailed info in CSV ---
+#   0 = basic CSV only (param_*, cost, std, delay1/2, delay*_std);
+#       skip sub-accumulator updates in hot path (cost/std/delay bit-identical)
+#   1 = include full cost breakdown (pricing_cost, outsourcing_cost,
+#       outsourcing_cost_band/outer/1/2, hardstop1/2)
+print_detailed_info = 0

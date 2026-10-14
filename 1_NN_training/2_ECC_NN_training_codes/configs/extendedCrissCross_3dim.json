@@ -1,0 +1,62 @@
+{
+    "eqn_config": {
+        "_comment": "RBM Steady State",
+        "eqn_name": "extendedCrissCross",
+        "total_time_critic": 0.1,
+        "dim": 3,
+        "num_time_interval_critic": 64,
+        "discount": 0.01,
+        "mu": -1.0,
+        "R": 0.0,
+        "rho": 0.0,
+        "x0": 1.0,
+        "a": 200,
+	"alow":0.0,
+	"Delta1": 0,
+	"Delta2": 0,
+	"v1" : 0,
+	"v2" : 1,
+	"v3" : 1.5,
+	"pricing_flag": "Y",
+	"delay_bound": [2.25, 1.5],
+	"eta_upper": 1.0,
+	"var_multiple": 1.0,
+	"addcost" : [0.05,0.2,0.3],
+	"simulation" : "",
+	"simu_u": 0
+    },
+    "net_config": {
+	"activation": "elu",
+        "num_hiddens_critic": [
+            100,
+	    100,
+	    100
+        ],
+        "lr_values_critic": [
+            0.0005,
+            0.0003,
+	    0.0001,
+	    0.00003,
+	    0.00001
+        ],
+        "lr_boundaries_critic": [
+            19000,
+	    44000,
+	    70000,
+	    140000
+        ],
+        "num_iterations": 6000,
+        "batch_size": 256,
+        "valid_size": 256,
+        "logging_frequency": 200,
+        "dtype": "float64",
+        "verbose": true,
+        "transformation": "none"
+    },
+    "train_config": {
+	"pace": 10,
+        "TD_type": "TD1",
+        "control": 1,
+	"epoch": 50
+    }
+}

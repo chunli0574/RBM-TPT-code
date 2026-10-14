@@ -1,0 +1,2 @@
+policy,n_paths,safety,rho,epsilon,phi_own_0,phi_other_0,phi_own_1,phi_other_1,Q_loop_1,zeta_L_1,zeta_H_1,Q_loop_2,zeta_L_2,zeta_H_2,lambda_tilde,beta_rate_1,beta_rate_2,beta_tilde_1,beta_tilde_2,wmp_limiting,wmp_extra_relative,cost_mean,cost_std,delay1_mean,delay1_std,delay2_mean,delay2_std,elapsed_sec
+B3,5000,1,1.07,,,,,,0.6,-0.016,-0.088,0.6,-0.016,-0.088,,,,,,,,6.006303,0.046382,0.994170,0.011486,0.997589,0.011708,99.8746

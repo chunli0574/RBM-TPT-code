@@ -1,0 +1,101 @@
+# Proposed policy parameter search configuration for CC3 Extended Criss-Cross
+# (NN pricing + NN outsourcing hold_last_no_takeover + WMP scheduling)
+#
+# Edit the lists below.  Separate values with commas.
+# Lines starting with '#' are ignored.
+#
+# The search loops over all combinations of:
+#   safety × epsilon × rho × lambda_tilde × beta_rate_1 × beta_rate_2
+#
+# beta_tilde_v = beta_rate_1 * BETA_CONST_V * rho  (BETA_CONST_V = b_v = 1.425)
+# beta_tilde_h = beta_rate_2 * BETA_CONST_H * rho  (BETA_CONST_H = b_h = 2.1375)
+#
+# A row is considered "feasible" if ALL 4 route delay probs < delay_constraint.
+# The minimum-cost feasible row is reported at the end.
+
+# --- Outer parameters (passed to idling/outsourcing policy) ---
+safety_list         = 0
+epsilon_list        = 0.11, 0.22, 0.34, 0.45, 0.56
+
+# --- Outsourcing parameter (also selects the NN model) ---
+rho_list            = 0.9, 0.95
+
+# --- beta_rate_symmetric: 0=separate beta_rate_1 and beta_rate_2 lists (default)
+#                          1=beta_rate_2 always equals beta_rate_1 (beta_rate_2_list ignored)
+#                          2=beta_rate_2 = 1-(1-beta_rate_1)*B_V/B_H (beta_rate_2_list ignored) ---
+beta_rate_symmetric = 2
+
+# --- epsilon_relative: 0=absolute band (eps×scaling added to boundary)
+#                       1=relative band (FACE_CONST×(rho±eps), no separate scaling) ---
+epsilon_relative    = 0
+
+# --- wmp_relative: 0=absolute w=mu_arr (old), 1=relative w=mu_arr/b_arr (new) ---
+wmp_relative        = 0
+
+# --- wmp_no_queue:
+#   0 = v1 full pressure:      front = (Z + λ̃*(Z-β̃)) * w_eff
+#   1 = v2 no-queue pressure:  front = λ̃*(Z-β̃) * w_eff
+#   2 = v3 normalized pressure: front = λ̃*((Z-β̃)/(B*rho)) * w_eff ---
+wmp_no_queue        = 0
+
+# --- wmp_extra_relative: only affects v1 (wmp_no_queue=0)
+#   0 = original: front = (Z[kk]   + λ̃*(Z[kk]    - β̃_v)) * w_eff[kk]
+#                 back  = (Z[2K-1] + λ̃*(ΣZ_h     - β̃_h)) * w_eff[2K-1]
+#   1 = pressure normalized by (B * rho):
+#                 front = (Z[kk]   + λ̃*(Z[kk]    - β̃_v)/(B_V*rho)) * w_eff[kk]
+#                 back  = (Z[2K-1] + λ̃*(ΣZ_h     - β̃_h)/(B_H*rho)) * w_eff[2K-1] ---
+wmp_extra_relative  = 0
+
+# --- Scheduling parameters (lambda_tilde × beta_rate_1 × beta_rate_2 grid) ---
+#
+# Two flavors with suffix _abs / _rel; the binary auto-selects per
+# wmp_extra_relative (or per the 5th CLI override 'abs'/'rel'):
+#   wmp_extra_relative = 0  →  *_abs lists
+#   wmp_extra_relative = 1  →  *_rel lists
+# sim_proposed errors out if the chosen variant's list is missing.
+
+# abs version
+lambda_tilde_list_abs = 1, 2, 3, 4, 5, 6, 7
+beta_rate_1_list_abs  = 0.6, 0.63, 0.66, 0.69, 0.72, 0.75, 0.78, 0.81, 0.84, 0.87, 0.9
+beta_rate_2_list_abs  = -1
+
+# rel version
+lambda_tilde_list_rel = 2, 4, 6, 8, 10, 12, 14
+beta_rate_1_list_rel  = 0.6, 0.63, 0.66, 0.69, 0.72, 0.75, 0.78, 0.81, 0.84, 0.87, 0.9
+beta_rate_2_list_rel  = -1
+
+# --- Reflection mode for NN/SinglePushing outsourcing ---
+# 0 = epsilon_band_hold_last_outsource_simultaneously_no_takeover (outward band, uses W_last)
+# 1 = epsilon_band_inward_outsource_simultaneously (inward band, uses current W)
+inward_reflection   = 0
+
+# --- Feasibility constraint (in %, same as Python varepsilon=1.0) ---
+delay_constraint    = 1.0
+
+# --- Output directory (relative to the binary, i.e., relative to codes/) ---
+output_dir          = ../prelimit_simulation_results/proposed_policy_results
+
+# --- Base directory of trained NN models ---
+model_base_dir      = ../../../1_NN_training/4_ECC_saved_NNs
+
+# --- Base directory for new-format (.weights.bin) NN models ---
+# Required when any rho in rho_list is in the new-format set (CC3: 0.885, 0.895, 0.905, 0.915, 0.925).
+new_model_base_dir  = ../../../1_NN_training/4_ECC_saved_NNs
+
+# --- Detailed output switch ---
+# 1           = full CSVs: include hardstop1..N, pricing_cost, outsourcing_cost
+#               columns in every CSV this binary writes; simulation accumulates
+#               pricing/outsourcing cost splits and per-route outsource time.
+# 0 (default) = lean CSVs: drop those 6 trailing columns and skip their
+#               accumulation inside the simulation. cost_mean and delay_prob
+#               are unaffected.
+print_detailed_info = 0
+
+# --- Parallel threads for inner combo loop (USE_OMP build only) ---
+# Used by sim_proposed_batch_omp (CC10 BATCH_NN+USE_BLAS+USE_OMP build).
+# 0 or 1 = serial; N > 1 uses min(N, SLURM_CPUS_PER_TASK) threads, parallelizing
+# the (lambda_tilde × beta_rate_1 × beta_rate_2) combo sweep for each fixed
+# (rho, safety, epsilon). Plain serial sim_proposed / sim_proposed_batch
+# binaries treat any value > 1 as 1 (a startup notice is printed).
+# Recommend matching --cpus-per-task in the submit script.
+parallel_threads    = 8

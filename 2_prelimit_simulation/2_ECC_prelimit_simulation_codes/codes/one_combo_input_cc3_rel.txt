@@ -1,0 +1,111 @@
+# =============================================================================
+# one_combo_input_cc3_rel.txt — input for sim_one_combo (CC3, DIM_K=3, N_ROUTES=4)
+# RELATIVE WMP variant: contains ONLY the 5 WMP-using policies (proposed,
+# C1, C2, D1, D2). Every section sets wmp_extra_relative = 1 → output files
+# get "rel_" prefix.
+# Top-level beta_rate_symmetric = 1  (br2 := br1; field beta_rate_2 omitted).
+# Pair file: one_combo_input_cc3_abs.txt (full 13 sections, wmp_extra_relative=0).
+#
+# Picks ONE policy out of {proposed, C1, C2, D1, D2}. Picking A1..D2-non-WMP
+# would error out because those sections do not exist in this file (by design).
+# =============================================================================
+
+# ----- Top-level common configuration -----
+policy              = proposed         # proposed | C1 | C2 | D1 | D2
+
+n_paths             = 5000              # number of simulation paths
+hist_bucket         = 0.1              # histogram bucket width (sim time units)
+output_dir          = ../delay_distribution_results/CC3
+
+print_detailed_info = 0                # 0=lean CSV, 1=full (does not affect histogram)
+inward_reflection   = 0                # [proposed] only: 0=hold_last_no_takeover, 1=inward
+epsilon_relative    = 0                # 0=absolute eps, 1=relative eps × FACE_CONST
+wmp_relative        = 0                # 0=w=mu_arr, 1=w=mu_arr/b_arr
+wmp_no_queue        = 0                # 0=v1 full, 1=v2 no-queue, 2=v3 normalized
+beta_rate_symmetric = 1                # 1 → beta_rate_2 := beta_rate_1 (only beta_rate_1 needed)
+
+# NN model paths (only used when policy = proposed)
+model_base_dir      = ../../../1_NN_training/4_ECC_saved_NNs
+new_model_base_dir  = ../../../1_NN_training/4_ECC_saved_NNs
+
+# =============================================================================
+# Per-policy parameter blocks — only the 5 WMP-using policies (rel variant).
+# =============================================================================
+
+[proposed]                        # NN_PRICING + NN_OUTSOURCING + WMP scheduling
+safety              = 0.0
+rho                 = 0.91
+epsilon             = 0.22
+lambda_tilde        = 4.0
+beta_rate_1         = 0.87
+wmp_extra_relative  = 1
+
+[C1]                        # BCPlinear, SinglePushing,  WMP
+safety              = 0.0
+rho                 = 0.91
+epsilon             = 0.11
+phi_own_0           = -0.064
+phi_other_0         = 0.00457143
+phi_own_1           = -0.064
+phi_other_1         = 0.00457143
+phi_own_2           = -0.064
+phi_other_2         = 0.00457143
+phi_own_3           = -0.064
+phi_other_3         = 0.008
+lambda_tilde        = 4.0
+beta_rate_1         = 0.84
+wmp_extra_relative  = 1
+
+[C2]                        # HighLow,   SinglePushing,  WMP
+safety              = 0.0
+rho                 = 0.89
+epsilon             = 0.11
+Q_loop_0            = 0.7
+zeta_L_0            = -0.012
+zeta_H_0            = -0.072
+Q_loop_1            = 0.7
+zeta_L_1            = -0.012
+zeta_H_1            = -0.072
+Q_loop_2            = 0.7
+zeta_L_2            = -0.012
+zeta_H_2            = -0.072
+Q_loop_3            = 0.7
+zeta_L_3            = -0.018
+zeta_H_3            = -0.108
+lambda_tilde        = 4.0
+beta_rate_1         = 0.84
+wmp_extra_relative  = 1
+
+[D1]                        # BCPlinear, ThresholdBased, WMP   (no epsilon)
+safety              = 0.0
+rho                 = 0.94
+phi_own_0           = -0.048
+phi_other_0         = 0.0
+phi_own_1           = -0.048
+phi_other_1         = 0.0
+phi_own_2           = -0.048
+phi_other_2         = 0.0
+phi_own_3           = -0.048
+phi_other_3         = 0.0
+lambda_tilde        = 4.0
+beta_rate_1         = 0.84
+wmp_extra_relative  = 1
+
+[D2]                        # HighLow,   ThresholdBased, WMP   (no epsilon)
+safety              = 0.0
+rho                 = 0.94
+Q_loop_0            = 0.7
+zeta_L_0            = -0.012
+zeta_H_0            = -0.072
+Q_loop_1            = 0.7
+zeta_L_1            = -0.012
+zeta_H_1            = -0.072
+Q_loop_2            = 0.7
+zeta_L_2            = -0.012
+zeta_H_2            = -0.072
+Q_loop_3            = 0.7
+zeta_L_3            = -0.018
+zeta_H_3            = -0.108
+lambda_tilde        = 4.0
+beta_rate_1         = 0.84
+wmp_extra_relative  = 1

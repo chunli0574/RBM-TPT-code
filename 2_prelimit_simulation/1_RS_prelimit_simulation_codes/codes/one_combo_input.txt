@@ -1,0 +1,192 @@
+# =============================================================================
+# one_combo_input.txt — input for sim_one_combo
+#
+# Picks ONE policy out of {proposed, A1..D2}, runs n_paths paths with the
+# parameters from the matching [section], and writes:
+#     {output_dir}/{prefix}{policy}_summary.csv
+#     {output_dir}/{prefix}{policy}_delay_hist.csv
+#
+# prefix encodes the WMP scheduling variant:
+#   wmp_limiting=1                          → ""
+#   wmp_limiting=0, wmp_extra_relative=0    → "abs_"
+#   wmp_limiting=0, wmp_extra_relative=1    → "rel_"
+# A/B benchmarks (no WMP) always use "" prefix.
+#
+# Lines starting with '#' are comments; blank lines ignored.
+# =============================================================================
+
+# ----- Top-level common configuration -----
+policy              = proposed         # proposed | A1 A2 A3 A4 B1 B2 B3 B4 C1 C2 D1 D2
+
+n_paths             = 5000             # number of simulation paths (overrides params.h N_PATHS)
+hist_bucket         = 0.1              # histogram bucket width (delay-time units)
+output_dir          = ../delay_distribution_results
+
+print_detailed_info = 0                # currently unused by sim_one_combo (kept for consistency)
+inward_reflection   = 0                # [proposed] only: 0=hold_last_no_takeover, 1=inward
+epsilon_relative    = 0                # 0=absolute eps, 1=relative eps (× FACE_BOUNDARY)
+beta_rate_symmetric = 1                # 1 → beta_rate_2 := beta_rate_1 (only beta_rate_1 needed)
+
+# NN model directory (only used when policy = proposed; rho must be in 0.95..1.05)
+model_new_base_dir  = ../../../1_NN_training/3_RS_saved_NNs
+
+# =============================================================================
+# Per-policy parameter blocks (optimal values; abs variant for WMP policies)
+# =============================================================================
+
+[proposed]                  # NN_PRICING + NN_OUTSOURCING + WMP scheduling
+safety              = 1.0
+rho                 = 1.02
+epsilon             = 0.22
+lambda_tilde        = 20.0
+beta_rate_1         = 0.69
+wmp_limiting        = 0
+wmp_extra_relative  = 0
+
+# -----------------------------------------------------------------------------
+# A-group: BCPlinear or HighLow pricing + SinglePushing outsourcing + LRS scheduling
+# -----------------------------------------------------------------------------
+
+[A1]                        # BCPlinear, SinglePushing, LRS_DelayTime
+safety       = 1.0
+rho          = 0.96
+epsilon      = 0.45
+phi_own_0    = -0.012
+phi_other_0  = -0.008
+phi_own_1    = -0.03
+phi_other_1  = -0.02
+
+[A2]                        # BCPlinear, SinglePushing, LRS_QueueLen
+safety       = 1.0
+rho          = 0.96
+epsilon      = 0.45
+phi_own_0    = -0.028
+phi_other_0  =  0.0
+phi_own_1    = -0.028
+phi_other_1  =  0.0
+
+[A3]                        # HighLow, SinglePushing, LRS_DelayTime
+safety       = 1.0
+rho          = 0.95
+epsilon      = 0.45
+Q_loop_1     = 0.8
+zeta_L_1     = -0.008
+zeta_H_1     = -0.04
+Q_loop_2     = 0.8
+zeta_L_2     = -0.02
+zeta_H_2     = -0.1
+
+[A4]                        # HighLow, SinglePushing, LRS_QueueLen
+safety       = 1.0
+rho          = 0.96
+epsilon      = 0.45
+Q_loop_1     = 0.7
+zeta_L_1     = -0.016
+zeta_H_1     = -0.064
+Q_loop_2     = 0.7
+zeta_L_2     = -0.016
+zeta_H_2     = -0.064
+
+# -----------------------------------------------------------------------------
+# B-group: BCPlinear or HighLow pricing + ThresholdBased outsourcing + LRS scheduling
+# (NO epsilon)
+# -----------------------------------------------------------------------------
+
+[B1]                        # BCPlinear, ThresholdBased, LRS_DelayTime
+safety       = 1.0
+rho          = 1.07
+phi_own_0    = -0.032
+phi_other_0  = -0.008
+phi_own_1    = -0.032
+phi_other_1  = -0.008
+
+[B2]                        # BCPlinear, ThresholdBased, LRS_QueueLen
+safety       = 1.0
+rho          = 1.07
+phi_own_0    = -0.04
+phi_other_0  =  0.0
+phi_own_1    = -0.04
+phi_other_1  =  0.0
+
+[B3]                        # HighLow, ThresholdBased, LRS_DelayTime
+safety       = 1.0
+rho          = 1.07
+Q_loop_1     = 0.6
+zeta_L_1     = -0.016
+zeta_H_1     = -0.088
+Q_loop_2     = 0.6
+zeta_L_2     = -0.016
+zeta_H_2     = -0.088
+
+[B4]                        # HighLow, ThresholdBased, LRS_QueueLen
+safety       = 1.0
+rho          = 1.07
+Q_loop_1     = 0.6
+zeta_L_1     = -0.016
+zeta_H_1     = -0.096
+Q_loop_2     = 0.6
+zeta_L_2     = -0.016
+zeta_H_2     = -0.096
+
+# -----------------------------------------------------------------------------
+# C-group: BCPlinear or HighLow pricing + SinglePushing + WMP scheduling
+# -----------------------------------------------------------------------------
+
+[C1]                        # BCPlinear, SinglePushing, WMP   (abs variant)
+safety              = 1.0
+rho                 = 1.0
+epsilon             = 0.34
+phi_own_0           = -0.02
+phi_other_0         =  0.0
+phi_own_1           = -0.02
+phi_other_1         =  0.0
+lambda_tilde        = 8.0
+beta_rate_1         = 0.69
+wmp_limiting        = 0
+wmp_extra_relative  = 0
+
+[C2]                        # HighLow, SinglePushing, WMP   (abs variant)
+safety              = 1.0
+rho                 = 1.0
+epsilon             = 0.45
+Q_loop_1            = 0.7
+zeta_L_1            = -0.008
+zeta_H_1            = -0.056
+Q_loop_2            = 0.7
+zeta_L_2            = -0.008
+zeta_H_2            = -0.056
+lambda_tilde        = 8.0
+beta_rate_1         = 0.69
+wmp_limiting        = 0
+wmp_extra_relative  = 0
+
+# -----------------------------------------------------------------------------
+# D-group: BCPlinear or HighLow pricing + ThresholdBased + WMP scheduling
+# (NO epsilon)
+# -----------------------------------------------------------------------------
+
+[D1]                        # BCPlinear, ThresholdBased, WMP   (abs variant)
+safety              = 1.0
+rho                 = 1.11
+phi_own_0           = -0.02
+phi_other_0         =  0.0
+phi_own_1           = -0.02
+phi_other_1         =  0.0
+lambda_tilde        = 12.0
+beta_rate_1         = 0.66
+wmp_limiting        = 0
+wmp_extra_relative  = 0
+
+[D2]                        # HighLow, ThresholdBased, WMP   (abs variant)
+safety              = 1.0
+rho                 = 1.11
+Q_loop_1            = 0.7
+zeta_L_1            = -0.008
+zeta_H_1            = -0.08
+Q_loop_2            = 0.7
+zeta_L_2            = -0.008
+zeta_H_2            = -0.08
+lambda_tilde        = 16.0
+beta_rate_1         = 0.69
+wmp_limiting        = 0
+wmp_extra_relative  = 0

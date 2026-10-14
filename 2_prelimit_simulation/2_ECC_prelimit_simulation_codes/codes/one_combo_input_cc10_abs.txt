@@ -1,0 +1,443 @@
+# =============================================================================
+# one_combo_input_cc10_abs.txt — input for sim_one_combo (CC10, DIM_K=10, N_ROUTES=11)
+# ABSOLUTE WMP variant: WMP-using sections (proposed, C1, C2, D1, D2) all set
+# wmp_extra_relative = 0 → output files get "abs_" prefix.
+# Top-level beta_rate_symmetric = 2  (br2 := 1 - (1-br1) * B_V/B_H).
+# Pair file: one_combo_input_cc10_rel.txt (only WMP policies, wmp_extra_relative=1).
+#
+# Per-policy parameters below come from the optimal-parameter table
+# (Proposed policy / 12 benchmarks). Edit if you want to sweep different values.
+#
+# RECOMMENDED CC10 build for [proposed]:
+#   make sim_one_combo_batch       # ENABLE_BATCH_NN=1 USE_BLAS=1 DIM_K_SELECT=10
+# Run as: ./sim_one_combo_batch one_combo_input_cc10_abs.txt
+# =============================================================================
+
+# ----- Top-level common configuration -----
+policy              = proposed         # proposed | A1 A2 A3 A4 B1 B2 B3 B4 C1 C2 D1 D2
+
+n_paths             = 5000             # number of simulation paths
+hist_bucket         = 0.1              # histogram bucket width (sim time units)
+output_dir          = ../delay_distribution_results/CC10
+
+print_detailed_info = 0                # 0=lean CSV, 1=full (does not affect histogram)
+inward_reflection   = 0                # [proposed] only: 0=hold_last_no_takeover, 1=inward
+epsilon_relative    = 0                # 0=absolute eps, 1=relative eps × FACE_CONST
+wmp_relative        = 0                # 0=w=mu_arr, 1=w=mu_arr/b_arr
+wmp_no_queue        = 0                # 0=v1 full, 1=v2 no-queue, 2=v3 normalized
+beta_rate_symmetric = 2                # 0=read beta_rate_2 from section
+                                       # 1=beta_rate_2 := beta_rate_1
+                                       # 2=beta_rate_2 := 1 - (1-beta_rate_1)*B_V/B_H
+                                       # (abs file uses 2; beta_rate_2 line omitted in sections)
+
+# NN model paths (only used when policy = proposed)
+model_base_dir      = ../../../1_NN_training/4_ECC_saved_NNs
+new_model_base_dir  = ../../../1_NN_training/4_ECC_saved_NNs
+
+# =============================================================================
+# Per-policy parameter blocks (optimal values — abs variant for WMP policies)
+# =============================================================================
+
+[proposed]                        # NN_PRICING + NN_OUTSOURCING + WMP scheduling
+safety              = 0.0
+rho                 = 0.93
+epsilon             = 0.34
+lambda_tilde        = 6.0
+beta_rate_1         = 0.78
+wmp_extra_relative  = 0
+
+[A1]                        # BCPlinear, SinglePushing, LRS_DelayTime
+safety              = 0.0
+rho                 = 0.95
+epsilon             = 0.11
+phi_own_0           = -0.016
+phi_other_0         = -0.00123077
+phi_own_1           = -0.016
+phi_other_1         = -0.00123077
+phi_own_2           = -0.016
+phi_other_2         = -0.00123077
+phi_own_3           = -0.016
+phi_other_3         = -0.00123077
+phi_own_4           = -0.016
+phi_other_4         = -0.00123077
+phi_own_5           = -0.016
+phi_other_5         = -0.00123077
+phi_own_6           = -0.016
+phi_other_6         = -0.00123077
+phi_own_7           = -0.016
+phi_other_7         = -0.00123077
+phi_own_8           = -0.016
+phi_other_8         = -0.00123077
+phi_own_9           = -0.016
+phi_other_9         = -0.00123077
+phi_own_10          = -0.02
+phi_other_10        = -0.008
+
+[A2]                        # BCPlinear, SinglePushing, LRS_QueueLen
+safety              = 0.0
+rho                 = 0.89
+epsilon             = 0.11
+phi_own_0           = -0.048
+phi_other_0         = -0.00123077
+phi_own_1           = -0.048
+phi_other_1         = -0.00123077
+phi_own_2           = -0.048
+phi_other_2         = -0.00123077
+phi_own_3           = -0.048
+phi_other_3         = -0.00123077
+phi_own_4           = -0.048
+phi_other_4         = -0.00123077
+phi_own_5           = -0.048
+phi_other_5         = -0.00123077
+phi_own_6           = -0.048
+phi_other_6         = -0.00123077
+phi_own_7           = -0.048
+phi_other_7         = -0.00123077
+phi_own_8           = -0.048
+phi_other_8         = -0.00123077
+phi_own_9           = -0.048
+phi_other_9         = -0.00123077
+phi_own_10          = -0.06
+phi_other_10        = -0.008
+
+[A3]                        # HighLow,   SinglePushing, LRS_DelayTime
+safety              = 0.0
+rho                 = 0.95
+epsilon             = 0.34
+Q_loop_0            = 0.8
+zeta_L_0            = -0.012
+zeta_H_0            = -0.048
+Q_loop_1            = 0.8
+zeta_L_1            = -0.012
+zeta_H_1            = -0.048
+Q_loop_2            = 0.8
+zeta_L_2            = -0.012
+zeta_H_2            = -0.048
+Q_loop_3            = 0.8
+zeta_L_3            = -0.012
+zeta_H_3            = -0.048
+Q_loop_4            = 0.8
+zeta_L_4            = -0.012
+zeta_H_4            = -0.048
+Q_loop_5            = 0.8
+zeta_L_5            = -0.012
+zeta_H_5            = -0.048
+Q_loop_6            = 0.8
+zeta_L_6            = -0.012
+zeta_H_6            = -0.048
+Q_loop_7            = 0.8
+zeta_L_7            = -0.012
+zeta_H_7            = -0.048
+Q_loop_8            = 0.8
+zeta_L_8            = -0.012
+zeta_H_8            = -0.048
+Q_loop_9            = 0.8
+zeta_L_9            = -0.012
+zeta_H_9            = -0.048
+Q_loop_10           = 0.8
+zeta_L_10           = -0.06
+zeta_H_10           = -0.24
+
+[A4]                        # HighLow,   SinglePushing, LRS_QueueLen
+safety              = 0.0
+rho                 = 0.86
+epsilon             = 0.11
+Q_loop_0            = 0.8
+zeta_L_0            = -0.024
+zeta_H_0            = -0.072
+Q_loop_1            = 0.8
+zeta_L_1            = -0.024
+zeta_H_1            = -0.072
+Q_loop_2            = 0.8
+zeta_L_2            = -0.024
+zeta_H_2            = -0.072
+Q_loop_3            = 0.8
+zeta_L_3            = -0.024
+zeta_H_3            = -0.072
+Q_loop_4            = 0.8
+zeta_L_4            = -0.024
+zeta_H_4            = -0.072
+Q_loop_5            = 0.8
+zeta_L_5            = -0.024
+zeta_H_5            = -0.072
+Q_loop_6            = 0.8
+zeta_L_6            = -0.024
+zeta_H_6            = -0.072
+Q_loop_7            = 0.8
+zeta_L_7            = -0.024
+zeta_H_7            = -0.072
+Q_loop_8            = 0.8
+zeta_L_8            = -0.024
+zeta_H_8            = -0.072
+Q_loop_9            = 0.8
+zeta_L_9            = -0.024
+zeta_H_9            = -0.072
+Q_loop_10           = 0.8
+zeta_L_10           = -0.12
+zeta_H_10           = -0.36
+
+[B1]                        # BCPlinear, ThresholdBased, LRS_DelayTime
+safety              = 0.0
+rho                 = 1.07
+phi_own_0           = -0.048
+phi_other_0         = 0.00123077
+phi_own_1           = -0.048
+phi_other_1         = 0.00123077
+phi_own_2           = -0.048
+phi_other_2         = 0.00123077
+phi_own_3           = -0.048
+phi_other_3         = 0.00123077
+phi_own_4           = -0.048
+phi_other_4         = 0.00123077
+phi_own_5           = -0.048
+phi_other_5         = 0.00123077
+phi_own_6           = -0.048
+phi_other_6         = 0.00123077
+phi_own_7           = -0.048
+phi_other_7         = 0.00123077
+phi_own_8           = -0.048
+phi_other_8         = 0.00123077
+phi_own_9           = -0.048
+phi_other_9         = 0.00123077
+phi_own_10          = -0.06
+phi_other_10        = 0.008
+
+[B2]                        # BCPlinear, ThresholdBased, LRS_QueueLen
+safety              = 0.0
+rho                 = 0.94
+phi_own_0           = -0.048
+phi_other_0         = -0.000615385
+phi_own_1           = -0.048
+phi_other_1         = -0.000615385
+phi_own_2           = -0.048
+phi_other_2         = -0.000615385
+phi_own_3           = -0.048
+phi_other_3         = -0.000615385
+phi_own_4           = -0.048
+phi_other_4         = -0.000615385
+phi_own_5           = -0.048
+phi_other_5         = -0.000615385
+phi_own_6           = -0.048
+phi_other_6         = -0.000615385
+phi_own_7           = -0.048
+phi_other_7         = -0.000615385
+phi_own_8           = -0.048
+phi_other_8         = -0.000615385
+phi_own_9           = -0.048
+phi_other_9         = -0.000615385
+phi_own_10          = -0.06
+phi_other_10        = -0.004
+
+[B3]                        # HighLow,   ThresholdBased, LRS_DelayTime
+safety              = 0.0
+rho                 = 1.07
+Q_loop_0            = 0.7
+zeta_L_0            = -0.012
+zeta_H_0            = -0.072
+Q_loop_1            = 0.7
+zeta_L_1            = -0.012
+zeta_H_1            = -0.072
+Q_loop_2            = 0.7
+zeta_L_2            = -0.012
+zeta_H_2            = -0.072
+Q_loop_3            = 0.7
+zeta_L_3            = -0.012
+zeta_H_3            = -0.072
+Q_loop_4            = 0.7
+zeta_L_4            = -0.012
+zeta_H_4            = -0.072
+Q_loop_5            = 0.7
+zeta_L_5            = -0.012
+zeta_H_5            = -0.072
+Q_loop_6            = 0.7
+zeta_L_6            = -0.012
+zeta_H_6            = -0.072
+Q_loop_7            = 0.7
+zeta_L_7            = -0.012
+zeta_H_7            = -0.072
+Q_loop_8            = 0.7
+zeta_L_8            = -0.012
+zeta_H_8            = -0.072
+Q_loop_9            = 0.7
+zeta_L_9            = -0.012
+zeta_H_9            = -0.072
+Q_loop_10           = 0.7
+zeta_L_10           = -0.06
+zeta_H_10           = -0.36
+
+[B4]                        # HighLow,   ThresholdBased, LRS_QueueLen
+safety              = 0.0
+rho                 = 0.94
+Q_loop_0            = 0.8
+zeta_L_0            = -0.024
+zeta_H_0            = -0.096
+Q_loop_1            = 0.8
+zeta_L_1            = -0.024
+zeta_H_1            = -0.096
+Q_loop_2            = 0.8
+zeta_L_2            = -0.024
+zeta_H_2            = -0.096
+Q_loop_3            = 0.8
+zeta_L_3            = -0.024
+zeta_H_3            = -0.096
+Q_loop_4            = 0.8
+zeta_L_4            = -0.024
+zeta_H_4            = -0.096
+Q_loop_5            = 0.8
+zeta_L_5            = -0.024
+zeta_H_5            = -0.096
+Q_loop_6            = 0.8
+zeta_L_6            = -0.024
+zeta_H_6            = -0.096
+Q_loop_7            = 0.8
+zeta_L_7            = -0.024
+zeta_H_7            = -0.096
+Q_loop_8            = 0.8
+zeta_L_8            = -0.024
+zeta_H_8            = -0.096
+Q_loop_9            = 0.8
+zeta_L_9            = -0.024
+zeta_H_9            = -0.096
+Q_loop_10           = 0.8
+zeta_L_10           = -0.12
+zeta_H_10           = -0.48
+
+[C1]                        # BCPlinear, SinglePushing,  WMP
+safety              = 0.0
+rho                 = 0.93
+epsilon             = 0.11
+phi_own_0           = -0.024
+phi_other_0         = 0.0
+phi_own_1           = -0.024
+phi_other_1         = 0.0
+phi_own_2           = -0.024
+phi_other_2         = 0.0
+phi_own_3           = -0.024
+phi_other_3         = 0.0
+phi_own_4           = -0.024
+phi_other_4         = 0.0
+phi_own_5           = -0.024
+phi_other_5         = 0.0
+phi_own_6           = -0.024
+phi_other_6         = 0.0
+phi_own_7           = -0.024
+phi_other_7         = 0.0
+phi_own_8           = -0.024
+phi_other_8         = 0.0
+phi_own_9           = -0.024
+phi_other_9         = 0.0
+phi_own_10          = -0.03
+phi_other_10        = 0.0
+lambda_tilde        = 3.0
+beta_rate_1         = 0.78
+wmp_extra_relative  = 0
+
+[C2]                        # HighLow,   SinglePushing,  WMP
+safety              = 0.0
+rho                 = 0.93
+epsilon             = 0.34
+Q_loop_0            = 0.8
+zeta_L_0            = -0.012
+zeta_H_0            = -0.036
+Q_loop_1            = 0.8
+zeta_L_1            = -0.012
+zeta_H_1            = -0.036
+Q_loop_2            = 0.8
+zeta_L_2            = -0.012
+zeta_H_2            = -0.036
+Q_loop_3            = 0.8
+zeta_L_3            = -0.012
+zeta_H_3            = -0.036
+Q_loop_4            = 0.8
+zeta_L_4            = -0.012
+zeta_H_4            = -0.036
+Q_loop_5            = 0.8
+zeta_L_5            = -0.012
+zeta_H_5            = -0.036
+Q_loop_6            = 0.8
+zeta_L_6            = -0.012
+zeta_H_6            = -0.036
+Q_loop_7            = 0.8
+zeta_L_7            = -0.012
+zeta_H_7            = -0.036
+Q_loop_8            = 0.8
+zeta_L_8            = -0.012
+zeta_H_8            = -0.036
+Q_loop_9            = 0.8
+zeta_L_9            = -0.012
+zeta_H_9            = -0.036
+Q_loop_10           = 0.8
+zeta_L_10           = -0.06
+zeta_H_10           = -0.18
+lambda_tilde        = 4.0
+beta_rate_1         = 0.78
+wmp_extra_relative  = 0
+
+[D1]                        # BCPlinear, ThresholdBased, WMP   (no epsilon)
+safety              = 0.0
+rho                 = 1.0
+phi_own_0           = -0.04
+phi_other_0         = 0.00184615
+phi_own_1           = -0.04
+phi_other_1         = 0.00184615
+phi_own_2           = -0.04
+phi_other_2         = 0.00184615
+phi_own_3           = -0.04
+phi_other_3         = 0.00184615
+phi_own_4           = -0.04
+phi_other_4         = 0.00184615
+phi_own_5           = -0.04
+phi_other_5         = 0.00184615
+phi_own_6           = -0.04
+phi_other_6         = 0.00184615
+phi_own_7           = -0.04
+phi_other_7         = 0.00184615
+phi_own_8           = -0.04
+phi_other_8         = 0.00184615
+phi_own_9           = -0.04
+phi_other_9         = 0.00184615
+phi_own_10          = -0.05
+phi_other_10        = 0.012
+lambda_tilde        = 2.0
+beta_rate_1         = 0.78
+wmp_extra_relative  = 0
+
+[D2]                        # HighLow,   ThresholdBased, WMP   (no epsilon)
+safety              = 0.0
+rho                 = 0.99
+Q_loop_0            = 0.7
+zeta_L_0            = -0.012
+zeta_H_0            = -0.048
+Q_loop_1            = 0.7
+zeta_L_1            = -0.012
+zeta_H_1            = -0.048
+Q_loop_2            = 0.7
+zeta_L_2            = -0.012
+zeta_H_2            = -0.048
+Q_loop_3            = 0.7
+zeta_L_3            = -0.012
+zeta_H_3            = -0.048
+Q_loop_4            = 0.7
+zeta_L_4            = -0.012
+zeta_H_4            = -0.048
+Q_loop_5            = 0.7
+zeta_L_5            = -0.012
+zeta_H_5            = -0.048
+Q_loop_6            = 0.7
+zeta_L_6            = -0.012
+zeta_H_6            = -0.048
+Q_loop_7            = 0.7
+zeta_L_7            = -0.012
+zeta_H_7            = -0.048
+Q_loop_8            = 0.7
+zeta_L_8            = -0.012
+zeta_H_8            = -0.048
+Q_loop_9            = 0.7
+zeta_L_9            = -0.012
+zeta_H_9            = -0.048
+Q_loop_10           = 0.7
+zeta_L_10           = -0.06
+zeta_H_10           = -0.24
+lambda_tilde        = 3.0
+beta_rate_1         = 0.75
+wmp_extra_relative  = 0
